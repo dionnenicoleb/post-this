@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Post This</title>
+  <meta name="description" content="One thought. Out into the world." />
+  <meta name="theme-color" content="#f3eee5" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Post This" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="stage">
+      <div class="mark">
+        <span class="glyph">·</span>
+        <span class="name">Post This</span>
+      </div>
+
+      <h1 class="heading">One thought. <em>Out into the world.</em></h1>
+      <p class="sub">Paste what you noticed. Send it. Leave.</p>
+
+      <div class="surface">
+        <textarea id="thought" class="thought" placeholder="What did you notice today…"></textarea>
+        <div class="voice">
+          <label for="voice">Voice</label>
+          <input id="voice" type="url" placeholder="optional — paste link" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="format" class="btn ghost" disabled>Format</button>
+        <button id="copy" class="btn ghost" disabled>Copy</button>
+        <div class="spacer"></div>
+        <span id="status" class="status"></span>
+        <button id="send" class="btn primary" disabled>Send to LinkedIn</button>
+      </div>
+
+      <div class="footnote">Done = posted.</div>
+    </section>
+
+    <aside class="law">
+      <h2>Remember</h2>
+      <ol>
+        <li>Only post what you noticed. Nothing else.</li>
+        <li>You are the content. Do not invent.</li>
+        <li>If it happened, it&rsquo;s enough.</li>
+        <li>One idea. No expansion.</li>
+        <li>Don&rsquo;t improve it. Send it as-is.</li>
+        <li>Done = posted.</li>
+        <li>Post it. Leave.</li>
+      </ol>
+      <div class="seal">Close the loop.</div>
+    </aside>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
