@@ -34,7 +34,7 @@ body{
 }
 
 .stage{
-  padding:56px 72px 40px;
+  padding:24px 72px 32px;
   display:flex;
   flex-direction:column;
   min-height:100vh;
@@ -43,7 +43,7 @@ body{
   display:flex;
   align-items:baseline;
   gap:10px;
-  margin-bottom:48px;
+  margin-bottom:18px;
 }
 .mark .glyph{
   font-family:var(--serif);
@@ -70,7 +70,7 @@ body{
 .sub{
   font-size:13px;
   color:var(--ink-dim);
-  margin:0 0 28px;
+  margin:0 0 18px;
 }
 
 .surface{
@@ -83,7 +83,7 @@ body{
 
 textarea.thought{
   width:100%;
-  min-height:340px;
+  min-height:220px;
   background:transparent;
   border:0;
   outline:0;
