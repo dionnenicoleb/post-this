@@ -4,60 +4,225 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Post This</title>
-  <meta name="description" content="One thought. Out into the world." />
+  <meta name="description" content="Your content library. One place." />
   <meta name="theme-color" content="#f3eee5" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Post This" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <main class="app">
-    <section class="stage">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CAPTURE SCREEN  (default view)
+════════════════════════════════════════════════════════════════ -->
+<div class="screen active" data-screen="capture">
+  <div class="screen-inner">
+
+    <header class="topbar">
       <div class="mark">
         <span class="glyph">·</span>
         <span class="name">Post This</span>
       </div>
+      <button id="library-btn" class="btn ghost small">Library →</button>
+    </header>
 
-      <h1 class="heading">One thought. <em>Out into the world.</em></h1>
-      <p class="sub">Paste what you noticed. Send it. Leave.</p>
+    <main class="capture-main">
+
+      <div class="capture-heading">
+        <h1 class="heading">What's the idea? <em>Drop it here.</em></h1>
+        <p class="sub">Type it fast. Don't edit. Just capture.</p>
+      </div>
 
       <div class="surface">
-        <textarea id="thought" class="thought" placeholder="What did you notice today…"></textarea>
+        <div class="textarea-wrap">
+          <textarea id="thought" class="thought" placeholder="What did you notice, figure out, or want to say…"></textarea>
+          <button id="mic-btn" class="mic-btn" title="Record idea" aria-label="Record idea">
+            <svg width="15" height="18" viewBox="0 0 15 18" fill="none">
+              <rect x="4" y="0.5" width="7" height="10" rx="3.5" fill="currentColor"/>
+              <path d="M1 9a6.5 6.5 0 0013 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <line x1="7.5" y1="15.5" x2="7.5" y2="17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="4.5" y1="17.5" x2="10.5" y2="17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="surface-divider"></div>
+
+        <div class="meta-row">
+          <div class="meta-field">
+            <label class="meta-label" for="project-select">Project</label>
+            <select id="project-select" class="meta-select">
+              <option value="">No project</option>
+            </select>
+          </div>
+          <div class="meta-field">
+            <label class="meta-label" for="platform-select">Platform</label>
+            <select id="platform-select" class="meta-select">
+              <option value="linkedin">LinkedIn</option>
+              <option value="instagram">Instagram</option>
+              <option value="substack">Substack</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="visual-row">
+          <label class="meta-label" for="visual-idea">Visual idea</label>
+          <input id="visual-idea" class="visual-input" placeholder="Describe the image you have in mind (optional)" />
+        </div>
       </div>
 
-      <div class="actions">
-        <button id="format" class="btn ghost" disabled>Format</button>
-        <button id="copy" class="btn ghost" disabled>Copy</button>
-        <div class="spacer"></div>
-        <span id="status" class="status"></span>
-        <button id="send" class="btn primary" disabled>Send to LinkedIn</button>
+      <div class="capture-actions">
+        <span id="autosave-status" class="status"></span>
+        <div class="capture-btns">
+          <button id="clear-capture-btn" class="btn ghost small" disabled>Clear</button>
+          <button id="save-draft-btn" class="btn primary" disabled>Save Draft</button>
+        </div>
       </div>
 
-      <div class="footnote">Done = posted.</div>
-    </section>
+      <!-- This Week panel -->
+      <section class="this-week-section">
+        <h2 class="section-label">This Week</h2>
+        <div id="this-week-list"><p class="empty-note">Nothing scheduled this week.</p></div>
+      </section>
 
-    <aside class="law">
-      <h2>Remember</h2>
-      <ol>
-        <li>Only post what you noticed. Nothing else.</li>
-        <li>You are the content. Do not invent.</li>
-        <li>If it happened, it&rsquo;s enough.</li>
-        <li>One idea. No expansion.</li>
-        <li>Don&rsquo;t improve it. Send it as-is.</li>
-        <li>Done = posted.</li>
-        <li>Post it. Leave.</li>
-      </ol>
-      <div class="seal">Close the loop.</div>
-    </aside>
-  </main>
+    </main>
+  </div>
+</div>
 
-  <script src="/app.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     LIBRARY SCREEN
+════════════════════════════════════════════════════════════════ -->
+<div class="screen" data-screen="library">
+  <div class="screen-inner">
+
+    <header class="topbar">
+      <button id="back-to-capture-btn" class="btn ghost small">← Capture</button>
+      <div class="mark">
+        <span class="glyph">·</span>
+        <span class="name">Library</span>
+      </div>
+      <div class="export-area">
+        <button id="copy-ai-btn" class="btn ghost small">Copy for AI</button>
+        <button id="export-csv-btn" class="btn ghost small">Export CSV</button>
+        <span id="export-status" class="status"></span>
+      </div>
+    </header>
+
+    <main class="library-main">
+
+      <!-- ── Projects list view ── -->
+      <div id="view-projects">
+        <div id="global-stats" class="global-stats-bar"></div>
+        <div id="projects-list"></div>
+      </div>
+
+      <!-- ── Project detail view ── -->
+      <div id="view-project" hidden>
+
+        <div class="project-detail-header">
+          <button id="back-to-projects-btn" class="btn ghost small">← Projects</button>
+          <h2 id="project-title" class="project-heading"></h2>
+        </div>
+
+        <div class="search-row">
+          <input id="project-search" class="search-input" placeholder="Search posts…" />
+        </div>
+
+        <!-- Up Next (scheduled this week for this project) -->
+        <section id="up-next" hidden>
+          <h3 class="section-label">Up Next</h3>
+          <div id="up-next-list"></div>
+        </section>
+
+        <!-- Tab bar -->
+        <div class="tab-bar" role="tablist">
+          <button id="tab-draft"   class="tab-btn active" role="tab">Drafts</button>
+          <button id="tab-ready"   class="tab-btn"        role="tab">Ready</button>
+          <button id="tab-posted"  class="tab-btn"        role="tab">Posted</button>
+          <button id="tab-starred" class="tab-btn"        role="tab">⭐</button>
+        </div>
+
+        <div id="posts-list"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     EDIT MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="modal" hidden role="dialog" aria-modal="true" aria-label="Edit post">
+  <div id="modal-backdrop" class="modal-backdrop"></div>
+  <div class="modal-panel">
+
+    <div class="modal-header">
+      <span class="modal-title">Edit post</span>
+      <button id="modal-close" class="icon-btn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <textarea id="edit-text" class="edit-textarea" rows="6" placeholder="Post text…"></textarea>
+
+      <div class="modal-meta-row">
+        <div class="meta-field">
+          <label class="meta-label" for="edit-project">Project</label>
+          <select id="edit-project" class="meta-select"></select>
+        </div>
+        <div class="meta-field">
+          <label class="meta-label" for="edit-platform">Platform</label>
+          <select id="edit-platform" class="meta-select">
+            <option value="linkedin">LinkedIn</option>
+            <option value="instagram">Instagram</option>
+            <option value="substack">Substack</option>
+          </select>
+        </div>
+        <div class="meta-field">
+          <label class="meta-label" for="edit-status">Status</label>
+          <select id="edit-status" class="meta-select">
+            <option value="draft">Draft</option>
+            <option value="ready">Ready</option>
+            <option value="posted">Posted</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="edit-date-row" class="modal-date-row" hidden>
+        <label class="meta-label" for="edit-date">Scheduled date</label>
+        <input id="edit-date" type="date" class="date-input" />
+      </div>
+
+      <div class="modal-visual-row">
+        <label class="meta-label" for="edit-visual">Visual idea</label>
+        <input id="edit-visual" class="visual-input" placeholder="Image notes (optional)" />
+      </div>
+
+      <div class="post-log-section">
+        <div class="meta-label">Post history</div>
+        <div id="edit-log" class="post-log"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button id="modal-delete-btn" class="btn ghost small danger">Delete</button>
+      <div class="modal-footer-right">
+        <button id="modal-cancel-btn" class="btn ghost small">Cancel</button>
+        <button id="modal-save-btn" class="btn primary small">Save</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script src="/app.js"></script>
 </body>
 </html>
