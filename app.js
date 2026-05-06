@@ -237,10 +237,11 @@ function triggerAutoSave() {
   clearTimeout(state.autoSaveTimer);
   state.autoSaveTimer = setTimeout(() => {
     const data = {
-      text:       el("thought").value,
-      visualIdea: el("visual-idea").value,
-      projectId:  el("project-select").value,
-      platform:   el("platform-select").value,
+      text:         el("thought").value,
+      visualIdea:   el("visual-idea").value,
+      projectId:    el("project-select").value,
+      platform:     el("platform-select").value,
+      scheduleDate: el("schedule-date").value,
     };
     localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
     showStatus("autosave-status", "autosaved ✓");
@@ -252,10 +253,11 @@ function restoreAutoSave() {
   if (!raw) return;
   try {
     const d = JSON.parse(raw);
-    if (d.text)       el("thought").value          = d.text;
-    if (d.visualIdea) el("visual-idea").value       = d.visualIdea;
-    if (d.platform)   el("platform-select").value   = d.platform;
-    if (d.projectId)  el("project-select").value    = d.projectId;
+    if (d.text)         el("thought").value          = d.text;
+    if (d.visualIdea)   el("visual-idea").value      = d.visualIdea;
+    if (d.platform)     el("platform-select").value  = d.platform;
+    if (d.projectId)    el("project-select").value   = d.projectId;
+    if (d.scheduleDate) el("schedule-date").value    = d.scheduleDate;
     refreshCaptureButtons();
     if (d.text) showStatus("autosave-status", "restored ·");
   } catch {}
@@ -268,9 +270,11 @@ function clearAutoSave() {
 // ── Capture screen helpers ────────────────────────────────────────────────────
 
 function refreshCaptureButtons() {
-  const has = el("thought").value.trim().length > 0;
-  el("save-draft-btn").disabled    = !has;
-  el("clear-capture-btn").disabled = !has;
+  const hasText = el("thought").value.trim().length > 0;
+  const hasDate = el("schedule-date").value.length > 0;
+  el("save-draft-btn").disabled    = !hasText;
+  el("schedule-btn").disabled      = !(hasText && hasDate);
+  el("clear-capture-btn").disabled = !hasText;
 }
 
 function populateProjectDropdown(selectId) {
@@ -511,9 +515,18 @@ async function saveEdit() {
   }
 }
 
-async function deletePost() {
+function deletePost() {
   if (!state.editPost) return;
-  if (!confirm("Delete this post? This can't be undone.")) return;
+  el("delete-modal").hidden = false;
+}
+
+function closeDeleteModal() {
+  el("delete-modal").hidden = true;
+}
+
+async function confirmDelete() {
+  if (!state.editPost) return;
+  closeDeleteModal();
   try {
     await sbDelete("posts", state.editPost.id);
     closeModal();
@@ -521,7 +534,7 @@ async function deletePost() {
     renderProjectsView();
     await refreshProjectView();
   } catch (e) {
-    console.error("deletePost:", e);
+    console.error("confirmDelete:", e);
   }
 }
 
@@ -561,6 +574,45 @@ async function saveDraft() {
     showStatus("autosave-status", "Not saved. Try again.");
   } finally {
     el("save-draft-btn").textContent = "Save Draft";
+    refreshCaptureButtons();
+  }
+}
+
+async function schedulePost() {
+  const text = el("thought").value.trim();
+  const date = el("schedule-date").value;
+  if (!text || !date) return;
+
+  el("schedule-btn").disabled = true;
+  el("schedule-btn").textContent = "Scheduling…";
+
+  try {
+    await sbPost("posts", {
+      text,
+      visual_idea:     el("visual-idea").value.trim() || null,
+      project_id:      el("project-select").value || null,
+      platform:        el("platform-select").value,
+      status:          "ready",
+      scheduled_date:  date,
+      user_id:         currentUser.id,
+    });
+
+    el("thought").value      = "";
+    el("visual-idea").value  = "";
+    el("schedule-date").value = "";
+    clearAutoSave();
+    refreshCaptureButtons();
+    showStatus("autosave-status", "Scheduled.", 2500);
+
+    await loadProjects();
+    await loadThisWeek();
+    renderThisWeek();
+    populateProjectDropdown("project-select");
+  } catch (e) {
+    console.error("schedulePost:", e);
+    showStatus("autosave-status", "Not saved. Try again.");
+  } finally {
+    el("schedule-btn").textContent = "Schedule";
     refreshCaptureButtons();
   }
 }
@@ -656,16 +708,45 @@ async function copyPost(id) {
 
 // ── Projects ──────────────────────────────────────────────────────────────────
 
-async function promptNewProject() {
-  const name = prompt("Project name:");
-  if (!name?.trim()) return;
+function promptNewProject() {
+  el("project-name-input").value   = "";
+  el("project-name-error").hidden  = true;
+  el("project-modal").hidden       = false;
+  setTimeout(() => el("project-name-input").focus(), 50);
+}
+
+function closeProjectModal() {
+  el("project-modal").hidden = true;
+}
+
+async function saveNewProject() {
+  const name = el("project-name-input").value.trim();
+  const errEl = el("project-name-error");
+  if (!name) {
+    errEl.textContent = "Please enter a name.";
+    errEl.hidden = false;
+    el("project-name-input").focus();
+    return;
+  }
+  const btn = el("project-save-btn");
+  btn.disabled = true;
+  btn.textContent = "Creating…";
+  errEl.hidden = true;
   try {
-    await sbPost("projects", { name: name.trim(), user_id: currentUser.id });
+    const payload = { name };
+    if (currentUser?.id) payload.user_id = currentUser.id;
+    await sbPost("projects", payload);
+    closeProjectModal();
     await loadProjects();
     renderProjectsView();
     populateProjectDropdown("project-select");
   } catch (e) {
-    console.error("promptNewProject:", e);
+    console.error("saveNewProject:", e);
+    errEl.textContent = e.message || "Something went wrong. Try again.";
+    errEl.hidden = false;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Create";
   }
 }
 
@@ -909,11 +990,14 @@ async function init() {
   el("visual-idea").addEventListener("input", triggerAutoSave);
   el("project-select").addEventListener("change", triggerAutoSave);
   el("platform-select").addEventListener("change", triggerAutoSave);
+  el("schedule-date").addEventListener("change", () => { refreshCaptureButtons(); triggerAutoSave(); });
 
-  el("save-draft-btn").onclick = saveDraft;
+  el("save-draft-btn").onclick  = saveDraft;
+  el("schedule-btn").onclick    = schedulePost;
   el("clear-capture-btn").onclick = () => {
-    el("thought").value     = "";
-    el("visual-idea").value = "";
+    el("thought").value       = "";
+    el("visual-idea").value   = "";
+    el("schedule-date").value = "";
     clearAutoSave();
     refreshCaptureButtons();
     showStatus("autosave-status", "");
@@ -955,9 +1039,16 @@ async function init() {
   el("modal-save-btn").onclick   = saveEdit;
   el("modal-delete-btn").onclick = deletePost;
 
-  // Close modal on Escape
+  // Keyboard shortcuts for modals
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !el("modal").hidden) closeModal();
+    if (e.key === "Escape") {
+      if (!el("modal").hidden)          closeModal();
+      if (!el("project-modal").hidden)  closeProjectModal();
+      if (!el("delete-modal").hidden)   closeDeleteModal();
+    }
+  });
+  el("project-name-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); saveNewProject(); }
   });
 
   // ── Export

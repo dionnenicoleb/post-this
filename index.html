@@ -94,6 +94,10 @@
               <option value="substack">Substack</option>
             </select>
           </div>
+          <div class="meta-field">
+            <label class="meta-label" for="schedule-date">Schedule date <span class="meta-optional">optional</span></label>
+            <input id="schedule-date" type="date" class="meta-date" />
+          </div>
         </div>
 
         <div class="visual-row">
@@ -106,7 +110,8 @@
         <span id="autosave-status" class="status"></span>
         <div class="capture-btns">
           <button id="clear-capture-btn" class="btn ghost small" disabled>Clear</button>
-          <button id="save-draft-btn" class="btn primary" disabled>Save Draft</button>
+          <button id="save-draft-btn" class="btn ghost" disabled>Save Draft</button>
+          <button id="schedule-btn" class="btn primary" disabled>Schedule</button>
         </div>
       </div>
 
@@ -247,6 +252,55 @@
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NEW PROJECT MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="project-modal" hidden role="dialog" aria-modal="true">
+  <div class="modal-backdrop" onclick="closeProjectModal()"></div>
+  <div class="modal-panel" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">New project</span>
+      <button class="icon-btn" onclick="closeProjectModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      <input id="project-name-input" class="search-input" placeholder="Project name…" maxlength="80" />
+      <p id="project-name-error" class="auth-error" hidden>Please enter a name.</p>
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="modal-footer-right">
+        <button class="btn ghost small" onclick="closeProjectModal()">Cancel</button>
+        <button id="project-save-btn" class="btn primary small" onclick="saveNewProject()">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     DELETE CONFIRM MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="delete-modal" hidden role="dialog" aria-modal="true">
+  <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
+  <div class="modal-panel" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Delete post</span>
+      <button class="icon-btn" onclick="closeDeleteModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0;font-size:14px;color:var(--ink-dim);line-height:1.6">
+        This can't be undone. The post and all its history will be permanently removed.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="modal-footer-right">
+        <button class="btn ghost small" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn small danger" onclick="confirmDelete()" style="background:var(--red-bg);border-color:var(--red)">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="/app.js"></script>
 </body>

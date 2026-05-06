@@ -293,6 +293,26 @@ textarea.thought::placeholder {
   outline: none;
 }
 .meta-select:focus { border-bottom-color: var(--gold) }
+.meta-date {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-dim);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 4px 0;
+  outline: none;
+  width: 100%;
+}
+.meta-date:focus { border-bottom-color: var(--gold) }
+.meta-optional {
+  font-size: 9px;
+  letter-spacing: .1em;
+  color: var(--ink-mute);
+  text-transform: lowercase;
+  font-weight: 400;
+}
 
 /* ── Visual idea row ───────────────────────────────────────────────────────── */
 .visual-row {
