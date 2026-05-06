@@ -15,8 +15,30 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════════════════════════════ -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-panel">
+    <div class="mark" style="justify-content:center;margin-bottom:28px">
+      <span class="glyph">·</span>
+      <span class="name">Post This</span>
+    </div>
+
+    <h1 class="auth-heading">Private.</h1>
+    <form id="auth-form" autocomplete="off">
+      <input id="passphrase" type="password" class="auth-input"
+        placeholder="Passphrase" autocomplete="current-password" />
+      <p id="auth-error" class="auth-error" hidden>Wrong passphrase. Try again.</p>
+      <button type="submit" class="btn primary" style="width:100%;margin-top:12px">Enter</button>
+    </form>
+
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      CAPTURE SCREEN  (default view)
@@ -29,7 +51,10 @@
         <span class="glyph">·</span>
         <span class="name">Post This</span>
       </div>
-      <button id="library-btn" class="btn ghost small">Library →</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="library-btn" class="btn ghost small">Library →</button>
+        <button id="signout-btn" class="btn ghost small" title="Sign out">↪</button>
+      </div>
     </header>
 
     <main class="capture-main">

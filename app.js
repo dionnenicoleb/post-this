@@ -1,20 +1,81 @@
 // Post This — Content Library
 // Capture ideas. Track posts. Know what's working. Export everything.
 
-const SUPABASE_URL     = "https://rmftvqqxktjwinpypeva.supabase.co";
+// ── Supabase ──────────────────────────────────────────────────────────────────
+
+const SUPABASE_URL      = "https://rmftvqqxktjwinpypeva.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Oh8nexfc-GYcp2PpAO_cxA_mpCf88JT";
-const AUTOSAVE_KEY     = "postthis_capture_v2";
+const AUTOSAVE_KEY      = "postthis_capture_v2";
+
+// Supabase JS client — handles auth sessions, magic link tokens, token refresh
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, detectSessionInUrl: true },
+});
+
+// Your email — hardcoded so the login screen only needs a passphrase
+const OWNER_EMAIL = "dionnenburks@gmail.com";
+
+// Current user + token — updated whenever auth state changes
+let currentUser  = null;
+let accessToken  = SUPABASE_ANON_KEY;
+let appStarted   = false;
+
+// Always use the session token if we have one, anon key otherwise
+function getHeaders() {
+  return {
+    apikey:         SUPABASE_ANON_KEY,
+    Authorization:  `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+  };
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+function showAuthScreen() {
+  el("auth-screen").classList.remove("hidden");
+  el("auth-error").hidden  = true;
+  el("passphrase").value   = "";
+}
+
+function hideAuthScreen() {
+  el("auth-screen").classList.add("hidden");
+}
+
+function setupAuth() {
+  const form  = el("auth-form");
+  const input = el("passphrase");
+  const error = el("auth-error");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const passphrase = input.value;
+    if (!passphrase) return;
+    error.hidden = true;
+    const btn = form.querySelector("button[type=submit]");
+    btn.disabled = true;
+    btn.textContent = "Entering…";
+    try {
+      const { error: err } = await sbClient.auth.signInWithPassword({
+        email:    OWNER_EMAIL,
+        password: passphrase,
+      });
+      if (err) throw err;
+      // onAuthStateChange handles the rest
+    } catch {
+      error.hidden = false;
+      input.value  = "";
+      input.focus();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Enter";
+    }
+  });
+}
 
 // ── Supabase helpers ──────────────────────────────────────────────────────────
 
-const BASE_HEADERS = {
-  apikey:        SUPABASE_ANON_KEY,
-  Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-  "Content-Type": "application/json",
-};
-
 async function sbGet(path) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: BASE_HEADERS });
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: getHeaders() });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
@@ -22,7 +83,7 @@ async function sbGet(path) {
 async function sbPost(table, body) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method: "POST",
-    headers: { ...BASE_HEADERS, Prefer: "return=representation" },
+    headers: { ...getHeaders(), Prefer: "return=representation" },
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(await r.text());
@@ -32,7 +93,7 @@ async function sbPost(table, body) {
 async function sbPatch(table, id, body) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: "PATCH",
-    headers: { ...BASE_HEADERS, Prefer: "return=representation" },
+    headers: { ...getHeaders(), Prefer: "return=representation" },
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(await r.text());
@@ -42,7 +103,7 @@ async function sbPatch(table, id, body) {
 async function sbDelete(table, id) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: "DELETE",
-    headers: BASE_HEADERS,
+    headers: getHeaders(),
   });
   if (!r.ok) throw new Error(await r.text());
 }
@@ -480,6 +541,7 @@ async function saveDraft() {
       project_id:  el("project-select").value || null,
       platform:    el("platform-select").value,
       status:      "draft",
+      user_id:     currentUser.id,
     });
 
     // Clear form
@@ -598,7 +660,7 @@ async function promptNewProject() {
   const name = prompt("Project name:");
   if (!name?.trim()) return;
   try {
-    await sbPost("projects", { name: name.trim() });
+    await sbPost("projects", { name: name.trim(), user_id: currentUser.id });
     await loadProjects();
     renderProjectsView();
     populateProjectDropdown("project-select");
@@ -902,6 +964,12 @@ async function init() {
   el("export-csv-btn").onclick  = exportCSV;
   el("copy-ai-btn").onclick     = copyForAI;
 
+  // ── Sign out
+  el("signout-btn").onclick = async () => {
+    await sbClient.auth.signOut();
+    // onAuthStateChange will handle showing the auth screen
+  };
+
   // ── Mic
   initMic();
 
@@ -914,7 +982,27 @@ async function init() {
   refreshCaptureButtons();
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", () => {
+  setupAuth();
+
+  // Listen for auth state — fires immediately with current session on load,
+  // and again whenever the user signs in or out.
+  sbClient.auth.onAuthStateChange(async (event, session) => {
+    currentUser = session?.user  || null;
+    accessToken = session?.access_token || SUPABASE_ANON_KEY;
+
+    if (session) {
+      hideAuthScreen();
+      if (!appStarted) {
+        appStarted = true;
+        await init();
+      }
+    } else {
+      appStarted = false;
+      showAuthScreen();
+    }
+  });
+});
 
 // Service worker (silent fail)
 if ("serviceWorker" in navigator && location.protocol === "https:") {

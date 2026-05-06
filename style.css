@@ -707,6 +707,62 @@ textarea.thought::placeholder {
   gap: 8px;
 }
 
+/* ── Auth screen ───────────────────────────────────────────────────────────── */
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.auth-screen.hidden { display: none }
+.auth-panel {
+  width: 100%;
+  max-width: 340px;
+  padding: 0 24px;
+  text-align: center;
+}
+.auth-heading {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 38px;
+  font-style: italic;
+  color: var(--gold);
+  margin: 0 0 24px;
+}
+.auth-input {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  padding: 13px 16px;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+  text-align: center;
+  letter-spacing: .12em;
+  transition: border-color .12s;
+}
+.auth-input:focus { border-color: var(--gold) }
+.auth-input::placeholder { letter-spacing: 0; color: var(--ink-mute) }
+.auth-sub {
+  font-size: 13.5px;
+  color: var(--ink-dim);
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+.auth-sub strong { color: var(--ink); font-weight: 500 }
+.auth-error {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--red);
+  margin: 8px 0 0;
+}
+
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .screen-inner { padding: 0 16px 80px }
